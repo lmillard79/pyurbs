@@ -50,10 +50,10 @@ class VectorBlock():
         Returns
         -------
         str
-            The vector block string to be used in the .catg file 
+            The vector block string to be used in the .cat file 
         """
 
-        vectorStr = "0\n"                   # Start with code 0, reach types are specified in the control block.
+        vectorStr = "0\n"                   # URBS has header file here instead RORB Starts with code 0, reach types are specified in the control block.
         for s in self._controlVector:
             vectorStr += f"{s}\n"
         vectorStr += f"{self._subAreaStr(self._stateVector, traveller)}\n{self._fracImpStr(self._stateVector, traveller)}\n"
