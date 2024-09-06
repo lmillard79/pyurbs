@@ -51,6 +51,13 @@ class VectorBlock():
         -------
         str
             The vector block string to be used in the .cat file 
+            <<HEADER start>>
+            {model name}
+            MODEL: SPLIT
+            USES: L CS U
+            DEFAULT PARAMETERS: alpha = 0.5 m = 0.8 beta = 3 n = 1.0 x = 0.25
+            CATCHMENT DATA FILE = {model name}.cat
+            <<HEADER end>>
         """
 
         vectorStr = "0\n"                   # URBS has header file here instead RORB Starts with code 0, reach types are specified in the control block.
