@@ -9,7 +9,7 @@ import os
 
 class VectorBlock():
     """
-    Builds the vector block for the RORB control file.
+    Builds the vector block for the URBS control file.
     """
 
     def __init__(self) -> None:
@@ -26,7 +26,7 @@ class VectorBlock():
         """ 
         Calculate action to take at the current step and store it in the VectorBlock's state.
         
-        Step is to be used at every update of the Traveller. The RORB control vector 
+        Step is to be used at every update of the Traveller. The URBS control vector 
         is then built from the VectorBlock's state after the catchment has been traversed.
 
         Parameters
@@ -65,13 +65,16 @@ class VectorBlock():
 
         This is necessary to know so that the correct control code can be returned.
 
-        Control codes:
-        - 1: If there is no running hydrograph and the node is a sub-area, set the running hydrograph.
-        - 2: If there is a running hydrograph and the node is a sub-area and has no other visitable upstream reaches.
-        - 3: If there is a running hydrograph and the node has other visitable upstream reaches, push node index onto stored hydrograph stack, set the running hydrograph to zero, and move to the most upstream point on that reach.
-        - 4: If the node has a stored hydrograph and there is a running hydrograph, pop the stored hydrograph from the stack.
-        - 5: If there is a running hydrograph and the node is not a sub-area and does not have upstream and there is nothing stored.
-
+        Control codes RORB:URBS
+        - 1: RAIN.       If there is no running hydrograph and the node is a sub-area, set the running hydrograph.
+        - 2: ADD RAIN.   If there is a running hydrograph and the node is a sub-area and has no other visitable upstream reaches.
+        - 3: STORE.      If there is a running hydrograph and the node has other visitable upstream reaches, push node index onto stored hydrograph stack, set the running hydrograph to zero, and move to the most upstream point on that reach.
+        - 4: GET.        If the node has a stored hydrograph and there is a running hydrograph, pop the stored hydrograph from the stack.
+        - 5: ROUTE.      If there is a running hydrograph and the node is not a sub-area and does not have upstream and there is nothing stored.
+        - 6: DAM ROUTE VBF=<label> File=<file>  Route through special storage URBS has four approachs
+        - 7: PRINT. <name>   
+        - 7.1: PRINT. <name>*
+        - 9: INPUT.
         Parameters
         ----------
         traveller : Traveller
@@ -106,7 +109,7 @@ class VectorBlock():
         
     def _control(self, code: tuple, traveller: Traveller) -> None:
         """
-        Format a control vector string according to the RORB manual Table 5-1 p.52 (version 6).
+        Format a control vector string according to the URBS manual Table 5-1 p.52 (version 6).
 
         Parameters
         ----------
@@ -119,7 +122,7 @@ class VectorBlock():
         traveller : Traveller
             The traveller traversing this catchment.
         """
-
+        #LAM# no URBS equivalent of RORB here
         if code[0] in (1, 2, 5):
             try:
                 r = traveller.getReach(code[1])
@@ -140,7 +143,7 @@ class VectorBlock():
     
     def _subAreaStr(self, code: tuple, traveller: Traveller) -> str:
         """
-        Format the subarea string according to the RORB manual.
+        Format the subarea string according to the URBS manual.
 
         Parameters
         ----------
@@ -158,6 +161,7 @@ class VectorBlock():
         str
             A subarea string for the control file.
         """
+        #LAM# no URBS equivalent of RORB here
 
         areaStr = ""
         for c in code:
@@ -167,7 +171,7 @@ class VectorBlock():
 
         values = areaStr.split(',')
         formatted_values = (
-            f"{resources.rorb.AREA_TABLE_HEADER}"
+            f"{resources.URBS.AREA_TABLE_HEADER}"
             f"{self._makeTable(values, 'area_table')}"
         )
 
@@ -175,7 +179,7 @@ class VectorBlock():
     
     def _fracImpStr(self, code: list, traveller: Traveller) -> str:
         """
-        Format the fraction impervious string according to the RORB manual.
+        Format the fraction impervious string according to the URBS manual.
 
         Parameters
         ----------
@@ -193,8 +197,8 @@ class VectorBlock():
         str
             A fraction impervious string for the control file.
         """
-
-        fStr = f"{resources.rorb.FI_TABLE_HEADER} 1,"
+        #LAM#  URBS equivalent of RORB here
+        fStr = f"{resources.URBS.FI_TABLE_HEADER} 1,"
         for c in code:
             if (c[0] == 1) or (c[0] == 2):
                 fStr += f"{traveller._catchment._vertices[c[1]].fi:{self._formattingOptions['fi_table']['percision']}},"
@@ -210,7 +214,7 @@ class VectorBlock():
     
     def _makeTable(self, value: list, table: str) -> str:
         """
-        Format a table string according to the RORB manual.
+        Format a table string according to the URBS manual.
 
         Parameters
         ----------
@@ -245,9 +249,9 @@ class VectorBlock():
 
 class GraphicsBlock():
     """
-    Builds the graphics block for the RORB control file.
+    Builds the graphics block for the URBS control file.
     """
-
+    #LAM# no URBS equivalent of RORB here
     def __init__(self) -> None:
         self._idMap = {}
         self._nodeVector = []
@@ -279,24 +283,24 @@ class GraphicsBlock():
         self._reachDisplay(code, traveller)
     
     def build(self) -> str:
-        """Build the graphical block string for the .catg file.
+        """Build the graphical block string for the URBS .cat file.
         
         Returns
         -------
         str
-            The graphical block string for the .catg file.
+            The graphical block string for the .cat file.
         """
-
+        #LAM# no URBS equivalent of RORB here        
         self._replaceIDTags(self._nodeVector)
         self._replaceIDTags(self._reachVector)
         self._normalizeCoordinates()
 
         graphicalStr = (
-            f"{resources.rorb.GRAPHICAL_HEADER}"
+            f"{resources.URBS.GRAPHICAL_HEADER}"
             f"{self._generateNodeString()}"
-            f"{resources.rorb.LEADING_TOKEN}\n"
+            f"{resources.URBS.LEADING_TOKEN}\n"
             f"{self._generateReachString()}"
-            f"{resources.rorb.GRAPHICAL_TAIL}" 
+            f"{resources.URBS.GRAPHICAL_TAIL}" 
         )
 
         return graphicalStr
@@ -318,7 +322,7 @@ class GraphicsBlock():
 
     def _normalizeCoordinates(self, scale: float = 90.0, shift: float = 2.5) -> None:
         """
-        Normalize the coordinates of the catchment to fit within the RORB GE window.
+        Normalize the coordinates of the catchment to fit within the URBS window.
 
         Parameters
         ----------
@@ -346,17 +350,17 @@ class GraphicsBlock():
         Generates the display information string for the nodes.
 
         Returns:
-            A formated display string of the node data, compatible with RORB GE.
+            A formated display string of the node data, compatible with URBS GE.
         """
 
-        nodeStr = resources.rorb.NODE_HEADER
-        nodeStr += f"{resources.rorb.LEADING_TOKEN}{len(self._nodeVector):>7}\n"
+        nodeStr = resources.URBS.NODE_HEADER
+        nodeStr += f"{resources.URBS.LEADING_TOKEN}{len(self._nodeVector):>7}\n"
         
         for row in self._nodeVector:
-            nodeStr += resources.rorb.LEADING_TOKEN
+            nodeStr += resources.URBS.LEADING_TOKEN
             for item in row:
                 nodeStr += f"{row[item]:{self._formattingOptions['node'][item]}}" 
-            nodeStr += f"\n{resources.rorb.LEADING_TOKEN}\n"
+            nodeStr += f"\n{resources.URBS.LEADING_TOKEN}\n"
         
         return nodeStr
     
@@ -365,17 +369,17 @@ class GraphicsBlock():
         Generates the display information string for the reaches.
 
         Returns:
-            A formated display string of the reach data, compatible with RORB GE.
+            A formated display string of the reach data, compatible with URBS GE.
         """
-
-        reachStr = resources.rorb.REACH_HEADER
-        reachStr += f"{resources.rorb.LEADING_TOKEN}{len(self._reachVector):>7}\n"
+        #LAM# convert RORB to URBS here
+        reachStr = resources.URBS.REACH_HEADER
+        reachStr += f"{resources.URBS.LEADING_TOKEN}{len(self._reachVector):>7}\n"
 
         for row in self._reachVector:
-            reachStr += resources.rorb.LEADING_TOKEN
+            reachStr += resources.URBS.LEADING_TOKEN
             for item in row:
                 if (item == 'x') or (item == 'y'):
-                    reachStr += f"\n{resources.rorb.LEADING_TOKEN}" 
+                    reachStr += f"\n{resources.URBS.LEADING_TOKEN}" 
                 reachStr += f"{row[item]:{self._formattingOptions['reach'][item]}}"
             reachStr += "\n"
 
@@ -400,6 +404,7 @@ class GraphicsBlock():
         """
 
         pos = code[1]
+        #LAM# convert RORB to URBS here
         if code[0] in (1, 2, 5):
             node = traveller.getNode(pos)
             x, y = node.coordinates()
@@ -447,6 +452,7 @@ class GraphicsBlock():
         """
 
         pos = code[1]
+        #LAM# convert RORB to URBS here
         if code[0] in (1, 2, 5):
             try:
                 reach = traveller.getReach(pos)
